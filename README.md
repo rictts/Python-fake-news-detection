@@ -1,204 +1,79 @@
-import pandas as pd
-from docx import Document
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.linear_model import LogisticRegression
+# 📰 Deteção de Fake News em Saúde Cardiovascular
 
-# =========================
-# LER DOCUMENTO WORD
-# =========================
+[![Python](https://img.shields.io/badge/Python-3.8+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+[![scikit-learn](https://img.shields.io/badge/scikit--learn-F7931E?style=for-the-badge&logo=scikit-learn&logoColor=white)](https://scikit-learn.org/)
+[![pandas](https://img.shields.io/badge/pandas-150458?style=for-the-badge&logo=pandas&logoColor=white)](https://pandas.pydata.org/)
 
-doc = Document("dataset.docx")
+Este projeto implementa um modelo de **Processamento de Linguagem Natural (NLP)** e **Aprendizagem Automática (Machine Learning)** para classificar títulos de notícias (*headlines*) sobre saúde cardiovascular como **Reais** ou **Falsas (Fake News)**.
 
-print("Parágrafos:", len(doc.paragraphs))
-print("Tabelas:", len(doc.tables))
+---
 
-headlines = []
-labels = []
+## 📌 Funcionalidades
 
-# =========================
-# LER TABELAS
-# =========================
+- **Extração de Dados:** Leitura e extração direta de tabelas a partir de ficheiros `.docx` (`dataset.docx`).
+- **Vetorização de Texto:** Transformação de texto em matrizes numéricas utilizando **TF-IDF** (*Term Frequency-Inverse Document Frequency*).
+- **Classificação:** Treino de um modelo de **Regressão Logística** para previsão binária (`Real` vs `Fake`).
+- **Avaliação de Testes:** Suíte de testes integrada com 20 cenários divididos por níveis de complexidade (fáceis, médios, difíceis, ambíguos e extra).
+- **Modo Interativo:** Prompt de linha de comandos (CLI) para testar *headlines* personalizadas em tempo real com indicação da percentagem de confiança.
 
-for table in doc.tables:
+---
 
-    for i, row in enumerate(table.rows):
+## 📂 Estrutura do Ficheiro de Dados
 
-        cells = [cell.text.strip() for cell in row.cells]
+O script espera encontrar na raiz do projeto um ficheiro chamado `dataset.docx` contendo tabelas organizadas com a seguinte estrutura mínima:
+- **Coluna 2 (índice 1):** Título da notícia (*Headline*).
+- **Coluna 5 (índice 4):** Rótulo (`Fake` ou `Real`).
 
-        # Ignorar cabeçalho
-        if i == 0:
-            continue
+---
 
-        # Verificar se existem pelo menos 5 colunas
-        if len(cells) >= 5:
+## 🛠️ Tecnologias e Bibliotecas Utilizadas
 
-            headline = cells[1]
-            label = cells[4]
+- **[Python 3.x](https://www.python.org/):** Linguagem principal do projeto.
+- **[pandas](https://pandas.pydata.org/):** Manipulação e estruturação de dados.
+- **[python-docx](https://python-docx.readthedocs.io/):** Extração de conteúdo de ficheiros `.docx`.
+- **[scikit-learn](https://scikit-learn.org/):** 
+  - `TfidfVectorizer` para extração de características textuais.
+  - `LogisticRegression` para treino do classificador.
 
-            if label in ["Fake", "Real"]:
+---
 
-                headlines.append(headline)
-                labels.append(label)
+## 🚀 Como Executar o Projeto
 
-# =========================
-# CRIAR DATAFRAME
-# =========================
+### 1. Pré-requisitos
+Garante que tens o Python instalado no teu sistema. 
 
-df = pd.DataFrame({
-    "Headline": headlines,
-    "Label": labels
-})
+### 2. Clonar o Repositório
+```bash
+git clone https://github.com/teu-usuario/teu-repositorio.git
+cd teu-repositorio
+```
 
-print("\nNúmero de notícias carregadas:", len(df))
-print("\nPrimeiras linhas:")
-print(df.head())
+### 3. Instalar as Dependências
+Instala as bibliotecas necessárias executando:
+```bash
+pip install pandas python-docx scikit-learn
+```
 
-if len(df) == 0:
-    print("\nERRO: Não foi encontrada nenhuma notícia.")
-    exit()
+### 4. Executar o Script
+Certifica-te de que o ficheiro `dataset.docx` está presente na pasta e executa:
+```bash
+python Codigo_dados_versao_2.py
+```
 
-# =========================
-# CONVERTER LABELS
-# =========================
+---
 
-y = df["Label"].map({
-    "Fake": 1,
-    "Real": 0
-})
+## 🔬 Exemplo de Funcionamento
 
-# =========================
-# TF-IDF
-# =========================
+Ao executar o script:
+1. O dataset é carregado e processado.
+2. O modelo é treinado.
+3. É apresentada a avaliação detalhada dos 20 casos de teste com respetivas percentagens de confiança e taxa de precisão global.
+4. É aberto o **modo interativo**:
 
-vectorizer = TfidfVectorizer()
+```text
+Introduza uma headline (or 'sair'): Garlic tea completely prevents heart attacks forever
+Resultado: Fake News (98.42% confiança)
 
-X = vectorizer.fit_transform(df["Headline"])
-
-# =========================
-# TREINAR MODELO
-# =========================
-
-model = LogisticRegression(max_iter=1000)
-
-model.fit(X, y)
-
-print("\nModelo treinado com sucesso!")
-
-# =========================
-# TESTES
-# =========================
-
-test_data = [
-
-    # Casos fáceis
-    ("T01", "Garlic tea completely prevents heart attacks forever", 1),
-    ("T02", "Doctors recommend regular exercise for heart health", 0),
-    ("T03", "Orange soda cleans blood vessels instantly", 1),
-    ("T04", "Researchers improve wearable heart monitoring technology", 0),
-
-    # Casos médios
-    ("T05", "Scientists discover new treatment for heart patients", 0),
-    ("T06", "Honey cures blocked arteries overnight", 1),
-    ("T07", "Cardiologists encourage healthy eating habits", 0),
-    ("T08", "Magnets improve blood circulation instantly", 1),
-
-    # Casos difíceis
-    ("T09", "New heart medication shows promising early results", 0),
-    ("T10", "Daily lemon juice may reduce heart attack risk", 1),
-    ("T11", "Experts study effects of sleep on heart health", 0),
-    ("T12", "Special tea completely eliminates cholesterol", 1),
-
-    # Casos ambíguos
-    ("T13", "Researchers investigate garlic compounds for cardiovascular health", 0),
-    ("T14", "Garlic supplements guarantee protection from heart attacks", 1),
-    ("T15", "Scientists analyse diet and cardiovascular disease", 0),
-    ("T16", "Natural remedy repairs damaged arteries instantly", 1),
-
-    # Casos extra
-    ("T17", "Hospitals launch new emergency cardiac response system", 0),
-    ("T18", "Walking five minutes per week prevents all heart disease", 1),
-    ("T19", "New study links smoking cessation to lower cardiac risk", 0),
-    ("T20", "Chocolate milk permanently removes artery blockage", 1)
-]
-
-# Preparar dados de teste
-sentences = [headline for _, headline, _ in test_data]
-
-X_test = vectorizer.transform(sentences)
-
-# Previsões
-predictions = model.predict(X_test)
-
-# Probabilidades
-probabilities = model.predict_proba(X_test)
-
-# =========================
-# RESULTADOS
-# =========================
-
-print("\nRESULTADOS\n")
-
-acertos = 0
-
-for i, ((news_id, headline, esperado), pred) in enumerate(zip(test_data, predictions)):
-
-    previsto = "Fake News" if pred == 1 else "Real News"
-    real = "Fake News" if esperado == 1 else "Real News"
-
-    confidence = max(probabilities[i]) * 100
-
-    correto = pred == esperado
-
-    if correto:
-        acertos += 1
-
-    print(f"ID: {news_id}")
-    print(f"Headline: {headline}")
-    print(f"Valor Real: {real}")
-    print(f"Previsão: {previsto}")
-    print(f"Confiança: {confidence:.2f}%")
-
-    if correto:
-        print("✓ ACERTOU")
-    else:
-        print("✗ ERROU")
-
-    print("-" * 60)
-
-# =========================
-# ESTATÍSTICAS
-# =========================
-
-total = len(test_data)
-
-precisao = (acertos / total) * 100
-
-print("\nRESUMO FINAL")
-print(f"Total de testes: {total}")
-print(f"Acertos: {acertos}")
-print(f"Erros: {total - acertos}")
-print(f"Precisão: {precisao:.2f}%")
-
-# =========================
-# TESTE LIVRE
-# =========================
-
-while True:
-
-    frase = input("\nIntroduza uma headline (ou 'sair'): ")
-
-    if frase.lower() == "sair":
-        print("Programa terminado.")
-        break
-
-    X_new = vectorizer.transform([frase])
-
-    prediction = model.predict(X_new)
-    probability = model.predict_proba(X_new)
-
-    confidence = max(probability[0]) * 100
-
-    if prediction[0] == 1:
-        print(f"Resultado: Fake News ({confidence:.2f}% confiança)")
-    else:
-        print(f"Resultado: Real News ({confidence:.2f}% confiança)")
+Introduza uma headline (or 'sair'): Doctors recommend regular exercise for heart health
+Resultado: Real News (95.10% confiança)
+```
